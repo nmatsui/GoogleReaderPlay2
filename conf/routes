@@ -1,0 +1,16 @@
+# Routes
+# This file defines all application routes (Higher priority routes first)
+# ~~~~
+
+# Home page
+GET     /                           controllers.Authentication.index
+
+# Map static resources from the /public folder to the /assets URL path
+GET     /assets/*file               controllers.Assets.at(path="/public", file)
+
+GET     /oauth2callback             controllers.Authentication.callback
+GET     /auth/initialize            controllers.Authentication.initialize
+GET     /auth/asyncInit             controllers.Authentication.asyncInit
+
+GET     /reader/tagList             controllers.Reader.tagList
+GET     /reader/asyncWordCloud      controllers.Reader.asyncWordCloud

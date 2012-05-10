@@ -1,0 +1,21 @@
+@main("linitializing...") {
+      <script type="text/javascript">
+        $(document).ready(function() {
+          $.get("@routes.Authentication.asyncInit", function(data) {
+            if (data["result"] == "ok") {
+              $(window.location).attr("href", "@routes.Reader.tagList");
+            }
+            else {
+              $("#mes").html("error cause: " + data["error"])
+            }
+          });
+        });
+      </script>
+      <div class="content">
+        <div class="row">
+          <div class="span16" id="mes">
+            初期化処理中・・・
+          </div>
+        </div>
+      </div>
+}

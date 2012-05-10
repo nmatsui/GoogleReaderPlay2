@@ -1,0 +1,46 @@
+@(ids:Seq[String])
+
+@import utils.Constants
+
+@main("Feeds") {
+      <script type="text/javascript">
+        function getWordCloud(target, id) {
+          var param = {'@Constants.ParamName.tagListId': id}
+          $.ajax({
+            url:"@routes.Reader.asyncWordCloud",
+            type:"GET",
+            data:param,
+            beforeSend:function(xhr) {
+              $("#"+target).html("単語クラウド取得中・・・");
+            },
+            success:function(data) {
+              if (data["result"] == "ok") {
+                var result = "";
+                for(var prop in data["data"]) {
+                  result += "<span style='font-size:" + Math.ceil(data["data"][prop]/3) + "ex;'>" + prop + "</span>&nbsp;&nbsp;";
+                }
+                $("#"+target).html(result);
+              }
+              else {
+                $("#"+target).html("error cause: " + data["error"]);
+              }
+            }
+          });
+        }
+      </script>
+      <div class="content">
+        <table class="zebra-striped">
+          <thead>
+            <tr><th>Google Readerのラベル</th><th>Feeds中で複数回出現する単語クラウド</th></tr>
+          </thead>
+          <tbody>
+          @ids.zipWithIndex.map { case(id, i) =>
+            <tr>
+              <td>@id.split("/").last</td>
+              <td><span id="wc-@i"><button class="wordcloud" onclick="getWordCloud('wc-@i', '@id')">単語クラウド表示</button></td>
+            </tr>
+          }
+          </tbody>
+        </table>
+      </div>
+}
