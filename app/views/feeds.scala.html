@@ -1,11 +1,15 @@
 @(tagListIds:Seq[String])
 
-@import utils.Constants
+@import utils.Constants.ParamName.tagListId
+@import utils.Constants.ParamName.result
+@import utils.Constants.ParamName.ok
+@import utils.Constants.ParamName.error
+@import utils.Constants.ParamName.content
 
 @main("Feeds") {
       <script type="text/javascript">
         function getWordCloud(target, tagListId) {
-          var param = {'@Constants.ParamName.tagListId': tagListId}
+          var param = {'@tagListId': tagListId}
           $.ajax({
             url:"@routes.Reader.asyncWordCloud",
             type:"GET",
@@ -14,15 +18,15 @@
               $("#"+target).html("単語クラウド取得中・・・");
             },
             success:function(data) {
-              if (data["result"] == "ok") {
+              if (data["@result"] == "@ok") {
                 var result = "";
-                for(var prop in data["tagCloud"]) {
-                  result += "<span style='font-size:" + Math.ceil(data["tagCloud"][prop]/3) + "ex;'>" + prop + "</span>&nbsp;&nbsp;";
+                for(var prop in data["@content"]) {
+                  result += "<span style='font-size:" + Math.ceil(data["@content"][prop]/3) + "ex;'>" + prop + "</span>&nbsp;&nbsp;";
                 }
                 $("#"+target).html(result);
               }
               else {
-                $("#"+target).html("error cause: " + data["error"]);
+                $("#"+target).html("error cause: " + data["@error"]);
               }
             }
           });

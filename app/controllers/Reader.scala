@@ -2,22 +2,24 @@ package controllers
 
 import scala.io.Source
 import scala.xml.NodeSeq
+
 import org.apache.http.client.methods.HttpGet
 import org.apache.http.impl.client.DefaultHttpClient
+
 import play.api.mvc.Action
 import play.api.mvc.Controller
+import play.Logger
+
 import utils.UrlUtils.encodeParam
+import utils.Constants
+import utils.JapaneseAnalyzer
 import utils.NodeSeqHelper
 import utils.String2NodeSeq
-import utils.JapaneseAnalyzer
-import org.apache.http.client.methods.HttpPost
-import org.apache.http.entity.StringEntity
-import utils.Constants
-import play.Logger
 
 object Reader extends Controller {
   implicit def string2NodeSeq(s:String) = new String2NodeSeq(s)
   implicit def nodeSeqHelper(target:NodeSeq) = new NodeSeqHelper(target)
+  
   private val client = new DefaultHttpClient
   
   def tagList = Action { request =>
@@ -72,20 +74,22 @@ object Reader extends Controller {
             val feedIds = (xml \\@ "number[@name=id]").map(_.text)
             Logger.debug("feedIds:" + feedIds)
             getFeedsContents(feedIds, accessToken) match {
-              case None => Ok("""{"result":"ng","error":"can't get feed content"}""").as("application/json")
               case Some(contents) => {
                 val data = JapaneseAnalyzer.tokenize(contents)
-                Logger.debug("tag cloud:" + data)
-                Ok("""{"result":"ok","tagCloud":%s}""".format(data)).as("application/json")
+                Logger.debug("content:" + data)
+                Logger.debug("hoge:" + Constants.ParamName.resultOk(data))
+                Ok(Constants.ParamName.resultOk(data)).as("application/json")
               }
+              case None => Ok(Constants.ParamName.resultNg("can't get feed content")).as("application/json")
             }
           }
-          case _ => Ok("""{"result":"ng","error":"can't get feed id list"}""").as("application/json")
+          case _ => Ok(Constants.ParamName.resultNg("can't get feed id list")).as("application/json")
         }
       }
-      case _ => Ok("""{"result":"ng","error":"can't find id or accessToken"}""").as("application/json")
+      case _ => Ok(Constants.ParamName.resultNg("can't find id or accessToken")).as("application/json")
     }
   }
+  
   private def getFeedsContents(ids:Seq[String], accessToken:String):Option[String] = {
     Logger.info("Reader#getFeeds")
     val params = Map(

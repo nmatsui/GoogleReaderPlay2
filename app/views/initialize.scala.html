@@ -1,12 +1,16 @@
+@import utils.Constants.ParamName.result
+@import utils.Constants.ParamName.ok
+@import utils.Constants.ParamName.error
+
 @main("linitializing...") {
       <script type="text/javascript">
         $(document).ready(function() {
           $.get("@routes.Authentication.asyncInit", function(data) {
-            if (data["result"] == "ok") {
+            if (data["@result"] == "@ok") {
               $(window.location).attr("href", "@routes.Reader.tagList");
             }
             else {
-              $("#mes").html("error cause: " + data["error"])
+              $("#mes").html("error cause: " + data["@error"])
             }
           });
         });

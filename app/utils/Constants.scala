@@ -22,7 +22,14 @@ object Constants {
     val speech = "名詞"
   }
   object ParamName {
-    val accessToken  = "access_token"
-    val tagListId    = "tagListId"
+    val accessToken                  = "access_token"
+    val tagListId                    = "tagListId"
+    val result                       = "result"
+    val ok                           = "ok"
+    val ng                           = "ng"
+    val error                        = "error"
+    val content                      = "content"
+    def resultOk(data:String):String = """{"%s":"%s","%s":%s}""".format(result, ok, content, data)
+    def resultNg(data:String):String = """{"%s":"%s","%s":"%s"}""".format(result, ng, error, data)
   }
 }

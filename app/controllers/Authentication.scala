@@ -37,9 +37,9 @@ object Authentication extends Controller {
     request.queryString.get(Constants.Google.oAuth2.responseType) match {
       case None => Ok(views.html.error("can't get authCode"))
       case Some(seq) => {
-        Redirect(routes.Authentication.initialize).withSession(
+        Redirect(routes.Authentication.initialize).withSession {
           Constants.Google.oAuth2.responseType -> seq.head
-        )
+        }
       }
     }
   }
@@ -78,16 +78,17 @@ object Authentication extends Controller {
             (json \ "access_token").asOpt[String] match {
               case None => Ok(views.html.error("access_token not found"))
               case Some(accessToken) => {
-                Ok("""{"result":"ok"}""").withSession(
+                Logger.debug(Constants.ParamName.resultOk("{}"))
+                Ok(Constants.ParamName.resultOk("{}")).withSession {
                   Constants.ParamName.accessToken -> accessToken
-                ).as("application/json")
+                }.as("application/json")
               }
             }
           }
           case _ => {
             val errorMessage = (json \ "error").as[String]
             Logger.error(errorMessage)
-            Ok("""{"result":"ng","error":"%s"}""".format(errorMessage)).as("application/json")
+            Ok(Constants.ParamName.resultNg(errorMessage)).as("application/json")
           }
         }
       }
