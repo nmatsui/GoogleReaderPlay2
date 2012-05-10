@@ -4,9 +4,9 @@ object Constants {
   val clientName = "google_reader_play2"
   object Google {
     object oAuth2 {
-      val clientId     = "xxxxxx"
-      val clientSecret = "xxxxxx"
-      val redirectURI  = "xxxxxx"
+      val clientId     = "xxxxxxxxxx"
+      val clientSecret = "xxxxxxxxxx"
+      val redirectURI  = "xxxxxxxxxx"
       val responseType = "code"
       val authURL      = "https://accounts.google.com/o/oauth2/auth"
       val tokenURL     = "https://accounts.google.com/o/oauth2/token"
@@ -23,6 +23,6 @@ object Constants {
   }
   object ParamName {
     val accessToken  = "access_token"
-    val tagListId = "tagListId"
+    val tagListId    = "tagListId"
   }
 }

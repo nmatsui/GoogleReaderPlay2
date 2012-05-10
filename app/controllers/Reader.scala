@@ -13,6 +13,7 @@ import utils.JapaneseAnalyzer
 import org.apache.http.client.methods.HttpPost
 import org.apache.http.entity.StringEntity
 import utils.Constants
+import play.Logger
 
 object Reader extends Controller {
   implicit def string2NodeSeq(s:String) = new String2NodeSeq(s)
@@ -20,7 +21,7 @@ object Reader extends Controller {
   private val client = new DefaultHttpClient
   
   def tagList = Action { request =>
-    println("Reader#tagList")
+    Logger.info("Reader#tagList")
     request.session.get(Constants.ParamName.accessToken) match {
       case None => Ok(views.html.error("invalid access"))
       case Some(accessToken) => {
@@ -31,14 +32,15 @@ object Reader extends Controller {
         val get = new HttpGet(url)
         get.setHeader("Authorization", "Bearer " + accessToken)
         val response = client.execute(get)
-        println("statusLine:" + response.getStatusLine)
-        response.getStatusLine.getStatusCode match {
+        val statusCode = response.getStatusLine.getStatusCode
+        val body = Source.fromInputStream(response.getEntity.getContent).getLines.mkString("\n")
+        Logger.debug("""statusCode:%d : body:%s""".format(statusCode, body))
+        statusCode match {
           case 200 => {
-            val body = Source.fromInputStream(response.getEntity.getContent).getLines.mkString("\n").toNodeSeq
-            println("body:" + body)
-            val ids = (body \\@ "string[@name=id]").filter(_.text.contains("/label/")).map(_.text)
-            println("ids:" + ids)
-            Ok(views.html.feeds(ids))
+            val xml = body.toNodeSeq
+            val tagListIds = (xml \\@ "string[@name=id]").filter(_.text.contains("/label/")).map(_.text)
+            Logger.debug("tagListIds:" + tagListIds)
+            Ok(views.html.feeds(tagListIds))
           }
           case _ => {
             Ok(views.html.error("can't get tag list"))
@@ -49,10 +51,9 @@ object Reader extends Controller {
   }
   
   def asyncWordCloud = Action { request =>
-    println("Reader#asyncWordCloud")
+    Logger.info("Reader#asyncWordCloud")
     (request.queryString.get(Constants.ParamName.tagListId), request.session.get(Constants.ParamName.accessToken)) match {
       case (Some(seqOfId), Some(accessToken)) => {
-        println(seqOfId.head)
         val params = Map(
             "s" -> seqOfId.head,
             "n" -> "80",
@@ -62,20 +63,20 @@ object Reader extends Controller {
         val get = new HttpGet(url)
         get.setHeader("Authorization", "Bearer " + accessToken)
         val response = client.execute(get)
-        println("statusLine:" + response.getStatusLine)
-        response.getStatusLine.getStatusCode match {
+        val statusCode = response.getStatusLine.getStatusCode
+        val body = Source.fromInputStream(response.getEntity.getContent).getLines.mkString("\n")
+        Logger.debug("""statusCode:%d : body:%s""".format(statusCode, body))
+        statusCode match {
           case 200 => {
-            val body = Source.fromInputStream(response.getEntity.getContent).getLines.mkString("\n").toNodeSeq
-            println("body:" + body)
-            val ids = (body \\@ "number[@name=id]").map(_.text)
-            println("ids:" + ids)
-            getFeedsContents(ids, accessToken) match {
+            val xml = body.toNodeSeq
+            val feedIds = (xml \\@ "number[@name=id]").map(_.text)
+            Logger.debug("feedIds:" + feedIds)
+            getFeedsContents(feedIds, accessToken) match {
               case None => Ok("""{"result":"ng","error":"can't get feed content"}""").as("application/json")
               case Some(contents) => {
                 val data = JapaneseAnalyzer.tokenize(contents)
-                println(data)
-                println("""{"result":"ok","data":%s}""".format(data))
-                Ok("""{"result":"ok","data":%s}""".format(data)).as("application/json")
+                Logger.debug("tag cloud:" + data)
+                Ok("""{"result":"ok","tagCloud":%s}""".format(data)).as("application/json")
               }
             }
           }
@@ -86,7 +87,7 @@ object Reader extends Controller {
     }
   }
   private def getFeedsContents(ids:Seq[String], accessToken:String):Option[String] = {
-    println("Reader#getFeeds")
+    Logger.info("Reader#getFeeds")
     val params = Map(
         "i" -> ids,
         "output" -> "atom"
@@ -95,20 +96,18 @@ object Reader extends Controller {
     val get = new HttpGet(url)
     get.setHeader("Authorization", "Bearer " + accessToken)
     val response = client.execute(get)
-    println("statusLine:" + response.getStatusLine)
-    response.getStatusLine.getStatusCode match {
+    val statusCode = response.getStatusLine.getStatusCode
+    val body = Source.fromInputStream(response.getEntity.getContent).getLines.mkString("\n")
+    Logger.debug("""statusCode:%d : body:%s""".format(statusCode, body))
+    statusCode match {
       case 200 => {
-        val body = Source.fromInputStream(response.getEntity.getContent).getLines.mkString("\n").toNodeSeq
-        val contents = ((body \\ "content").toList ::: (body \\ "summary").toList)
+        val xml = body.toNodeSeq
+        val contents = ((xml \\ "content").toList ::: (xml \\ "summary").toList)
         				.map(_.text.toNodeSeq.map(_.text).mkString("\n"))
         				.mkString("\n")
-        println("contents:" + contents)
         Option(contents)
       }
-      case _ => {
-        println(Source.fromInputStream(response.getEntity.getContent).getLines.mkString("\n"))
-        None
-      }
+      case _ => None
     }
   }
 }

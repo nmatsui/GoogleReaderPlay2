@@ -9,6 +9,8 @@ import org.apache.http.impl.client.DefaultHttpClient
 import play.api.libs.json.Json
 import play.api.mvc.Action
 import play.api.mvc.Controller
+import play.Logger
+
 import utils.UrlUtils.encodeParam
 import utils.Constants
 
@@ -16,7 +18,7 @@ object Authentication extends Controller {
   private val client = new DefaultHttpClient
   
   def index = Action { request =>
-    println("Authentication#index")
+    Logger.info("Authentication#index")
     val params = Map(
         "response_type"   -> Constants.Google.oAuth2.responseType,
         "client_id"       -> Constants.Google.oAuth2.clientId,
@@ -27,12 +29,11 @@ object Authentication extends Controller {
         "approval_prompt" -> "force"
         )
     val url = Constants.Google.oAuth2.authURL + "?" + encodeParam(params)
-    println(url)
     Ok(views.html.index(url))
   }
   
   def callback = Action { request =>
-    println("Authentication#callback")
+    Logger.info("Authentication#callback")
     request.queryString.get(Constants.Google.oAuth2.responseType) match {
       case None => Ok(views.html.error("can't get authCode"))
       case Some(seq) => {
@@ -44,16 +45,16 @@ object Authentication extends Controller {
   }
   
   def initialize = Action { request =>
-    println("Authentication#redirect")
+    Logger.info("Authentication#redirect")
     Ok(views.html.initialize())
   }
   
   def asyncInit = Action { request =>
-    println("Authentication#asyncInit")
+    Logger.info("Authentication#asyncInit")
     request.session.get(Constants.Google.oAuth2.responseType) match {
       case None => Ok(views.html.error("invalid access"))
       case Some(authCode) => {
-        println("auth code => " + authCode)
+        Logger.debug("auth code => " + authCode)
         
         val params = Map(
             "code"          -> authCode,
@@ -68,14 +69,15 @@ object Authentication extends Controller {
         post.setHeader("Content-Type", "application/x-www-form-urlencoded")
         post.setEntity(new StringEntity(encodeParam(params)))
         val response = client.execute(post)
-        val body = Json.parse(Source.fromInputStream(response.getEntity.getContent).getLines.mkString("\n"))
-        println(body)
-        response.getStatusLine.getStatusCode match {
+        val statusCode = response.getStatusLine.getStatusCode
+        val body = Source.fromInputStream(response.getEntity.getContent).getLines.mkString("\n")
+        Logger.debug("""statusCode:%d : body:%s""".format(statusCode, body))
+        val json = Json.parse(body)
+        statusCode match {
           case 200 => {
-            (body \ "access_token").asOpt[String] match {
+            (json \ "access_token").asOpt[String] match {
               case None => Ok(views.html.error("access_token not found"))
               case Some(accessToken) => {
-                println("access_token => " + accessToken)
                 Ok("""{"result":"ok"}""").withSession(
                   Constants.ParamName.accessToken -> accessToken
                 ).as("application/json")
@@ -83,8 +85,8 @@ object Authentication extends Controller {
             }
           }
           case _ => {
-            val errorMessage = (body \ "error").as[String]
-            println("error => " + errorMessage)
+            val errorMessage = (json \ "error").as[String]
+            Logger.error(errorMessage)
             Ok("""{"result":"ng","error":"%s"}""".format(errorMessage)).as("application/json")
           }
         }
