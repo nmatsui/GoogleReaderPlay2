@@ -17,6 +17,16 @@ Google Readerのデータを取得するために、[Google oAuth2](https://deve
 2. ProjectをCreateし、「Web application」のClientIDを生成してください（この際、RedirectURIは http://localhost:9000/oauth2callback にしてください）
 3. app/utils/Constants.scala の clintId, clientSecret, redirectURI を修正してください
 
+必要なライブラリを追加し、ClassPathに定義してください
+* HTTPクライアント [Apache HttpClient 4.1.3](http://hc.apache.org/httpcomponents-client-ga/)
+    * httpcore-4.1.4.jar
+    * httpclient-4.1.3.jar
+
+* HTML(XML)パーサ [Validator.nu](http://about.validator.nu/htmlparser/) 
+    * htmlparser-1.3.1-with-transitions.jar
+
+* 形態素解析ライブラリ [Kuromoji](http://www.atilika.org/)
+    * kuromoji-0.7.7.jar
 
 使い方
 ------
