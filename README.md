@@ -28,10 +28,15 @@ Google Readerのデータを取得するために、[Google oAuth2](https://deve
 * 形態素解析ライブラリ [Kuromoji](http://www.atilika.org/)
     * kuromoji-0.7.7.jar
 
+[Playframeworkのドキュメント](http://www.playframework.org/documentation/2.0.1/Installing)に従い、[Playframework 2.0.1](http://download.playframework.org/releases/play-2.0.1.zip)をインストールしてください
+
 使い方
 ------
 
-1. GoogleReaderPlay2ディレクトリで、`play run`を実行してください
+1. GoogleReaderPlay2ディレクトリで、`play`を実行してください（Proxyの背後から利用する場合、`play -Dhttp.proxyHost=192.168.0.1 -Dhttp.proxyPort=8080 -Dhttp.proxyUser=hoge -Dhttp.proxyPassword=fuga`等、Proxyの設定を引数で指定してください）
+1. Playコンソール上から、`clean`
+1. Playコンソール上から、`compile`
+1. Playコンソール上から、`run`
 2. ブラウザから`http://localhost:9000`にアクセスすると、TOP画面が表示されます
 2. 「Googleへログイン」からgoogle認証サイトへ遷移し、Googleアカウントでログインした後アプリケーションのアクセスを許可してください
 3. Google Readerに定義してあるフォルダのリストが表示されます
