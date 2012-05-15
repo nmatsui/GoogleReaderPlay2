@@ -11,10 +11,21 @@ Google Readerのデータを取得するために、[Google oAuth2](https://deve
 環境準備
 --------
 
-* [Google API Console](https://code.google.com/apis/console/)より、Google Serviceを利用するためのキーを取得してください。
-    * Google Readerは公式なサービスAPIが公開されていないため、「URL Shortener API」で代替します。「service」タブから「URL Shortener API」をONにしてください
-    * ProjectをCreateし、「Web application」のClientIDを生成してください（この際、RedirectURIは http://localhost:9000/oauth2callback にしてください）
-    * app/utils/Constants.scala の clintId, clientSecret, redirectURI を修正してください
+[Google API Console](https://code.google.com/apis/console/)より、Google Serviceを利用するためのキーを取得してください。
+
+1. Google Readerは公式なサービスAPIが公開されていないため、「URL Shortener API」で代替します。「service」タブから「URL Shortener API」をONにしてください
+2. ProjectをCreateし、「Web application」のClientIDを生成してください（この際、RedirectURIは http://localhost:9000/oauth2callback にしてください）
+3. app/utils/Constants.scala の clintId, clientSecret, redirectURI を修正してください
+
+
+使い方
+------
+
+1. GoogleReaderPlay2ディレクトリで、`play run`を実行してください
+2. ブラウザから`http://localhost:9000`にアクセスすると、TOP画面が表示されます
+2. 「Googleへログイン」からgoogle認証サイトへ遷移し、Googleアカウントでログインした後アプリケーションのアクセスを許可してください
+3. Google Readerに定義してあるフォルダのリストが表示されます
+4. 各フォルダの「単語クラウド表示」をクリックすると、そのフォルダに分類されたRSSフィードを80件取得し、出現頻度に従ってタグクラウド風に単語（名詞）を表示します
 
 License
 -------
